@@ -1,0 +1,59 @@
+services:
+  berserk-tracker:
+    build: .
+    container_name: berserk-tracker
+    restart: unless-stopped
+    
+    ports:
+      # Health check endpoint
+      - "8080:8080"
+    
+    environment:
+      # Intervalo entre verificacoes em segundos (3600 = 1 hora)
+      - CHECK_INTERVAL=3600
+      
+      # Porta do health check
+      - HEALTH_PORT=8080
+      
+      # Servico de notificacao: 'ntfy', 'pushover', 'telegram', 'none'
+      - NOTIFICATION_SERVICE=ntfy
+      
+      # === NTFY (Recomendado - Gratuito) ===
+      # Crie um topico unico em https://ntfy.sh
+      # Instale o app Ntfy no iOS e inscreva-se no mesmo topico
+      - NTFY_TOPIC=berserk-tracker-seu-id-unico
+      - NTFY_SERVER=https://ntfy.sh
+      
+      # === PUSHOVER (Alternativa - $5 unico) ===
+      # Crie conta em https://pushover.net
+      #- PUSHOVER_USER_KEY=seu_user_key
+      #- PUSHOVER_API_TOKEN=seu_api_token
+      
+      # === TELEGRAM (Alternativa - Gratuito) ===
+      # Crie um bot com @BotFather e obtenha seu chat_id
+      #- TELEGRAM_BOT_TOKEN=seu_bot_token
+      #- TELEGRAM_CHAT_ID=seu_chat_id
+    
+    volumes:
+      # Persistir dados entre reinicializacoes
+      - berserk_data:/data
+    
+    # Limites de recursos (opcional)
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  berserk_data:
