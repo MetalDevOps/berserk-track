@@ -1,8 +1,16 @@
 #!/bin/bash
 # Script de instalacao do Berserk Tracker no LXC
 # Execute como root: bash install.sh
+# 
+# Uso:
+#   git clone https://github.com/MetalDevOps/berserk-track.git
+#   cd berserk-track
+#   bash install.sh
 
 set -e
+
+REPO_URL="https://github.com/MetalDevOps/berserk-track.git"
+INSTALL_DIR="/opt/berserk-tracker"
 
 echo "=========================================="
 echo "  Berserk Manga Tracker - Instalacao"
@@ -20,11 +28,14 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+# Detecta diretorio atual (onde o script foi executado)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 echo -e "${GREEN}[1/7]${NC} Atualizando sistema..."
 apt update && apt upgrade -y
 
 echo -e "${GREEN}[2/7]${NC} Instalando dependencias..."
-apt install -y python3 python3-venv python3-pip curl
+apt install -y python3 python3-venv python3-pip curl git
 
 echo -e "${GREEN}[3/7]${NC} Criando usuario do servico..."
 if ! id "berserk-tracker" &>/dev/null; then
@@ -32,22 +43,33 @@ if ! id "berserk-tracker" &>/dev/null; then
 fi
 
 echo -e "${GREEN}[4/7]${NC} Criando diretorios..."
-mkdir -p /opt/berserk-tracker
 mkdir -p /etc/berserk-tracker
 mkdir -p /var/lib/berserk-tracker
 
 echo -e "${GREEN}[5/7]${NC} Copiando arquivos..."
-# Copia o script principal
-cp berserk_tracker.py /opt/berserk-tracker/
-cp requirements.txt /opt/berserk-tracker/
-
-# Copia configuracao se nao existir
-if [ ! -f /etc/berserk-tracker/config.env ]; then
-    cp deploy/config.env.example /etc/berserk-tracker/config.env
-    echo -e "${YELLOW}IMPORTANTE: Edite /etc/berserk-tracker/config.env com suas configuracoes${NC}"
+# Se executado de dentro do repo clonado, copia os arquivos
+if [ -f "$SCRIPT_DIR/berserk_tracker.py" ]; then
+    mkdir -p $INSTALL_DIR
+    cp "$SCRIPT_DIR/berserk_tracker.py" $INSTALL_DIR/
+    cp "$SCRIPT_DIR/requirements.txt" $INSTALL_DIR/
+    
+    if [ ! -f /etc/berserk-tracker/config.env ]; then
+        cp "$SCRIPT_DIR/deploy/config.env.example" /etc/berserk-tracker/config.env
+        echo -e "${YELLOW}IMPORTANTE: Edite /etc/berserk-tracker/config.env com suas configuracoes${NC}"
+    fi
+    
+    cp "$SCRIPT_DIR/deploy/berserk-tracker.service" /etc/systemd/system/
+else
+    echo -e "${YELLOW}Clonando repositorio...${NC}"
+    git clone $REPO_URL $INSTALL_DIR
+    
+    if [ ! -f /etc/berserk-tracker/config.env ]; then
+        cp "$INSTALL_DIR/deploy/config.env.example" /etc/berserk-tracker/config.env
+        echo -e "${YELLOW}IMPORTANTE: Edite /etc/berserk-tracker/config.env com suas configuracoes${NC}"
+    fi
+    
+    cp "$INSTALL_DIR/deploy/berserk-tracker.service" /etc/systemd/system/
 fi
-
-# Copia servico systemd
 cp deploy/berserk-tracker.service /etc/systemd/system/
 
 echo -e "${GREEN}[6/7]${NC} Criando ambiente virtual Python..."

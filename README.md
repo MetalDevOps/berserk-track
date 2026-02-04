@@ -20,33 +20,22 @@ No Proxmox, crie um container:
 - **Disco**: 2GB
 - **CPU**: 1 core
 
-### 2. Transferir Arquivos
+### 2. Instalar no LXC
 
 ```bash
-# No seu computador, compacte o projeto
+# Instalar git
+apt update && apt install -y git
+
+# Clonar repositorio
+cd /opt
+git clone https://github.com/MetalDevOps/berserk-track.git
 cd berserk-track
-tar -czvf berserk-tracker.tar.gz \
-    berserk_tracker.py \
-    requirements.txt \
-    install.sh \
-    uninstall.sh \
-    deploy/
 
-# Transfira para o LXC
-scp berserk-tracker.tar.gz root@IP_DO_LXC:/root/
-```
-
-### 3. Instalar no LXC
-
-```bash
-# No LXC
-cd /root
-tar -xzvf berserk-tracker.tar.gz
-cd berserk-tracker
+# Executar instalacao
 bash install.sh
 ```
 
-### 4. Configurar
+### 3. Configurar
 
 ```bash
 # Edite a configuracao
@@ -56,13 +45,13 @@ nano /etc/berserk-tracker/config.env
 NTFY_TOPIC=berserk-tracker-seu-nome-2024
 ```
 
-### 5. Configurar Ntfy no iOS
+### 4. Configurar Ntfy no iOS
 
 1. Instale o app **Ntfy** da [App Store](https://apps.apple.com/app/ntfy/id1625396347)
 2. Toque em `+` para adicionar inscricao
 3. Digite o mesmo topico configurado (ex: `berserk-tracker-seu-nome-2024`)
 
-### 6. Iniciar Servico
+### 5. Iniciar Servico
 
 ```bash
 systemctl enable berserk-tracker
@@ -75,7 +64,7 @@ systemctl status berserk-tracker
 journalctl -u berserk-tracker -f
 ```
 
-### 7. Testar Health Check
+### 6. Testar Health Check
 
 ```bash
 curl http://localhost:8080/health
@@ -104,6 +93,10 @@ Resposta esperada:
 Se preferir usar Docker:
 
 ```bash
+# Clonar repositorio
+git clone https://github.com/MetalDevOps/berserk-track.git
+cd berserk-track
+
 # Edite docker-compose.yml com seu NTFY_TOPIC
 nano docker-compose.yml
 
@@ -113,6 +106,16 @@ docker-compose up -d
 # Verifique
 docker-compose logs -f
 curl http://localhost:8080/health
+```
+
+## Atualizar
+
+Para atualizar para a versao mais recente:
+
+```bash
+cd /opt/berserk-track
+git pull
+systemctl restart berserk-tracker
 ```
 
 ## Comandos Uteis
