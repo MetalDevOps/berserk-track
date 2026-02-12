@@ -18,12 +18,17 @@ echo "[1/4] Parando servico..."
 systemctl stop berserk-tracker 2>/dev/null || true
 systemctl disable berserk-tracker 2>/dev/null || true
 
+APP_DIR=$(systemctl cat berserk-tracker 2>/dev/null | sed -n 's/^WorkingDirectory=//p' | tail -n 1)
+if [ -z "$APP_DIR" ]; then
+    APP_DIR="/opt/berserk-track"
+fi
+
 echo "[2/4] Removendo arquivos do systemd..."
 rm -f /etc/systemd/system/berserk-tracker.service
 systemctl daemon-reload
 
 echo "[3/4] Removendo arquivos da aplicacao..."
-rm -rf /opt/berserk-tracker
+rm -rf "$APP_DIR"
 
 echo "[4/4] Removendo usuario..."
 userdel berserk-tracker 2>/dev/null || true

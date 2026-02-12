@@ -117,9 +117,10 @@ Para atualizar para a versao mais recente:
 
 ```bash
 cd /opt/berserk-track
-git pull
-systemctl restart berserk-tracker
+bash install.sh
 ```
+
+O `install.sh` funciona como **install/update**: faz `git pull` (quando possivel), atualiza o venv e reinicia o servico.
 
 ## Comandos Uteis
 

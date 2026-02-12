@@ -7,8 +7,8 @@ Wants=network-online.target
 Type=simple
 User=berserk-tracker
 Group=berserk-tracker
-WorkingDirectory=/opt/berserk-tracker
-ExecStart=/opt/berserk-tracker/venv/bin/python /opt/berserk-tracker/berserk_tracker.py
+WorkingDirectory=/opt/berserk-track
+ExecStart=/opt/berserk-track/venv/bin/python /opt/berserk-track/berserk_tracker.py
 Restart=always
 RestartSec=30
 
