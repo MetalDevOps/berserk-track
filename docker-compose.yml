@@ -15,19 +15,19 @@ services:
       # Porta do health check
       - HEALTH_PORT=8080
       
-      # Servico de notificacao: 'ntfy', 'pushover', 'telegram', 'none'
-      - NOTIFICATION_SERVICE=ntfy
+      # Servico de notificacao: 'pushover', 'ntfy', 'telegram', 'none'
+      - NOTIFICATION_SERVICE=pushover
       
-      # === NTFY (Recomendado - Gratuito) ===
+      # === PUSHOVER (Recomendado) ===
+      # Crie conta em https://pushover.net
+      - PUSHOVER_USER_KEY=
+      - PUSHOVER_API_TOKEN=
+      
+      # === NTFY (Alternativa - Gratuito) ===
       # Crie um topico unico em https://ntfy.sh
       # Instale o app Ntfy no iOS e inscreva-se no mesmo topico
-      - NTFY_TOPIC=berserk-tracker-seu-id-unico
-      - NTFY_SERVER=https://ntfy.sh
-      
-      # === PUSHOVER (Alternativa - $5 unico) ===
-      # Crie conta em https://pushover.net
-      #- PUSHOVER_USER_KEY=seu_user_key
-      #- PUSHOVER_API_TOKEN=seu_api_token
+      #- NTFY_TOPIC=berserk-tracker-seu-id-unico
+      #- NTFY_SERVER=https://ntfy.sh
       
       # === TELEGRAM (Alternativa - Gratuito) ===
       # Crie um bot com @BotFather e obtenha seu chat_id

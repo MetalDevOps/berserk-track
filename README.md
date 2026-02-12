@@ -5,7 +5,7 @@ Monitora a disponibilidade de mangas Berserk na Panini Brasil e envia notificaco
 ## Recursos
 
 - Verificacao automatica a cada hora
-- Notificacoes push para iOS (Ntfy, Pushover ou Telegram)
+- Notificacoes push para iOS (Pushover, Ntfy ou Telegram)
 - Endpoint `/health` para monitoramento
 - Deploy simples em LXC ou Docker
 - Evita notificacoes duplicadas
@@ -41,15 +41,18 @@ bash install.sh
 # Edite a configuracao
 nano /etc/berserk-tracker/config.env
 
-# Altere o NTFY_TOPIC para algo unico:
-NTFY_TOPIC=berserk-tracker-seu-nome-2024
+# Configure suas credenciais do Pushover:
+NOTIFICATION_SERVICE=pushover
+PUSHOVER_USER_KEY=seu_user_key
+PUSHOVER_API_TOKEN=seu_api_token
 ```
 
-### 4. Configurar Ntfy no iOS
+### 4. Configurar Pushover no iOS
 
-1. Instale o app **Ntfy** da [App Store](https://apps.apple.com/app/ntfy/id1625396347)
-2. Toque em `+` para adicionar inscricao
-3. Digite o mesmo topico configurado (ex: `berserk-tracker-seu-nome-2024`)
+1. Instale o app **Pushover** da [App Store](https://apps.apple.com/us/app/pushover-notifications/id506088175)
+2. Crie sua conta e copie o **User Key**
+3. Em [pushover.net/apps/build](https://pushover.net/apps/build), crie um app e copie o **API Token**
+4. Preencha `PUSHOVER_USER_KEY` e `PUSHOVER_API_TOKEN` no `config.env`
 
 ### 5. Iniciar Servico
 
@@ -97,7 +100,7 @@ Se preferir usar Docker:
 git clone https://github.com/MetalDevOps/berserk-track.git
 cd berserk-track
 
-# Edite docker-compose.yml com seu NTFY_TOPIC
+# Edite docker-compose.yml com suas credenciais PUSHOVER
 nano docker-compose.yml
 
 # Inicie
@@ -133,8 +136,13 @@ systemctl stop berserk-tracker
 # Verificar health
 curl http://localhost:8080/health
 
-# Testar notificacao manualmente
-curl -d "Teste de notificacao" ntfy.sh/seu-topico
+# Testar notificacao manualmente via Pushover
+curl -s \
+  -F "token=SEU_API_TOKEN" \
+  -F "user=SEU_USER_KEY" \
+  -F "title=Berserk Tracker" \
+  -F "message=Teste de notificacao" \
+  https://api.pushover.net/1/messages.json
 ```
 
 ## Variaveis de Ambiente
@@ -143,11 +151,11 @@ curl -d "Teste de notificacao" ntfy.sh/seu-topico
 |----------|--------|-----------|
 | `CHECK_INTERVAL` | 3600 | Intervalo entre verificacoes (segundos) |
 | `HEALTH_PORT` | 8080 | Porta do servidor HTTP |
-| `NOTIFICATION_SERVICE` | ntfy | Servico: ntfy, pushover, telegram, none |
-| `NTFY_TOPIC` | - | Seu topico unico no ntfy.sh |
-| `NTFY_SERVER` | https://ntfy.sh | Servidor ntfy |
+| `NOTIFICATION_SERVICE` | pushover | Servico: pushover, ntfy, telegram, none |
 | `PUSHOVER_USER_KEY` | - | User key do Pushover |
 | `PUSHOVER_API_TOKEN` | - | API token do Pushover |
+| `NTFY_TOPIC` | - | Seu topico unico no ntfy.sh (se usar ntfy) |
+| `NTFY_SERVER` | https://ntfy.sh | Servidor ntfy (se usar ntfy) |
 | `TELEGRAM_BOT_TOKEN` | - | Token do bot Telegram |
 | `TELEGRAM_CHAT_ID` | - | Chat ID do Telegram |
 
@@ -183,11 +191,16 @@ journalctl -u berserk-tracker -n 50
 
 ### Nao recebo notificacoes
 ```bash
-# Teste manual do ntfy
-curl -d "Teste" ntfy.sh/seu-topico
+# Verifique as credenciais do Pushover
+grep -E "NOTIFICATION_SERVICE|PUSHOVER_USER_KEY|PUSHOVER_API_TOKEN" /etc/berserk-tracker/config.env
 
-# Verifique se o topico esta correto
-grep NTFY_TOPIC /etc/berserk-tracker/config.env
+# Teste manual do Pushover
+curl -s \
+  -F "token=SEU_API_TOKEN" \
+  -F "user=SEU_USER_KEY" \
+  -F "title=Berserk Tracker" \
+  -F "message=Teste" \
+  https://api.pushover.net/1/messages.json
 ```
 
 ### Health check retorna erro

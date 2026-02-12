@@ -2,7 +2,7 @@
 """
 Berserk Manga Availability Tracker
 Verifica periodicamente a disponibilidade de mangas Berserk para compra.
-Envia notificacoes push para iOS via Pushover ou Ntfy.
+Envia notificacoes push para iOS via Pushover.
 Inclui servidor HTTP para health check.
 """
 
@@ -73,7 +73,7 @@ HEALTH_PORT = int(os.getenv("HEALTH_PORT", "8080"))
 
 # Configuracao de notificacao
 # Opcoes: 'pushover', 'ntfy', 'telegram', 'none'
-NOTIFICATION_SERVICE = os.getenv("NOTIFICATION_SERVICE", "ntfy")
+NOTIFICATION_SERVICE = os.getenv("NOTIFICATION_SERVICE", "pushover")
 
 # Pushover (https://pushover.net) - $5 unico, excelente para iOS
 PUSHOVER_USER_KEY = os.getenv("PUSHOVER_USER_KEY", "")

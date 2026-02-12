@@ -20,9 +20,7 @@ USER tracker
 # Variaveis de ambiente padrao
 ENV CHECK_INTERVAL=3600
 ENV HEALTH_PORT=8080
-ENV NOTIFICATION_SERVICE=ntfy
-ENV NTFY_TOPIC=berserk-tracker-CHANGE-ME
-ENV NTFY_SERVER=https://ntfy.sh
+ENV NOTIFICATION_SERVICE=pushover
 ENV PYTHONUNBUFFERED=1
 
 # Expor porta do health check
