@@ -9,6 +9,11 @@
 
 set -e
 
+# Se o usuario executar com "sh install.sh", reexecuta com bash.
+if [ -z "${BASH_VERSION:-}" ]; then
+    exec /bin/bash "$0" "$@"
+fi
+
 echo "=========================================="
 echo "  Berserk Manga Tracker - Install/Update"
 echo "=========================================="
@@ -20,7 +25,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 # Verifica se esta rodando como root
-if [ "$EUID" -ne 0 ]; then
+if [ "$(id -u)" -ne 0 ]; then
     echo -e "${RED}Erro: Execute como root (sudo bash install.sh)${NC}"
     exit 1
 fi
