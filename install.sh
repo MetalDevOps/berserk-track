@@ -28,7 +28,10 @@ fi
 # Detecta diretorio atual (onde o script foi executado)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPT_DIR_REAL="$(cd "$SCRIPT_DIR" && pwd -P)"
-SERVICE_FILE="/etc/systemd/system/berserk-tracker.service"
+SERVICE_NAME="berserk-track"
+LEGACY_SERVICE_NAME="berserk-tracker"
+SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
+LEGACY_SERVICE_FILE="/etc/systemd/system/${LEGACY_SERVICE_NAME}.service"
 CONFIG_DIR="/etc/berserk-tracker"
 CONFIG_FILE="$CONFIG_DIR/config.env"
 DATA_DIR="/var/lib/berserk-tracker"
@@ -37,10 +40,14 @@ LEGACY_DIR="/opt/berserk-tracker"
 detect_previous_installation() {
     PREV_APP_DIR=""
 
-    if systemctl cat berserk-tracker >/dev/null 2>&1; then
-        PREV_APP_DIR=$(systemctl cat berserk-tracker | sed -n 's/^WorkingDirectory=//p' | tail -n 1)
+    if systemctl cat "$SERVICE_NAME" >/dev/null 2>&1; then
+        PREV_APP_DIR=$(systemctl cat "$SERVICE_NAME" | sed -n 's/^WorkingDirectory=//p' | tail -n 1)
+    elif systemctl cat "$LEGACY_SERVICE_NAME" >/dev/null 2>&1; then
+        PREV_APP_DIR=$(systemctl cat "$LEGACY_SERVICE_NAME" | sed -n 's/^WorkingDirectory=//p' | tail -n 1)
     elif [ -f "$SERVICE_FILE" ]; then
         PREV_APP_DIR=$(sed -n 's/^WorkingDirectory=//p' "$SERVICE_FILE" | tail -n 1)
+    elif [ -f "$LEGACY_SERVICE_FILE" ]; then
+        PREV_APP_DIR=$(sed -n 's/^WorkingDirectory=//p' "$LEGACY_SERVICE_FILE" | tail -n 1)
     fi
 
     NEED_UNINSTALL=0
@@ -54,11 +61,11 @@ detect_previous_installation() {
 }
 
 uninstall_previous_installation() {
-    echo -e "${YELLOW}[INFO]${NC} Instalacao anterior detectada. Executando uninstall..."
+    echo -e "${YELLOW}[INFO]${NC} Limpando restos da instalacao anterior..."
 
-    systemctl stop berserk-tracker 2>/dev/null || true
-    systemctl disable berserk-tracker 2>/dev/null || true
-    rm -f "$SERVICE_FILE"
+    systemctl stop "$LEGACY_SERVICE_NAME" 2>/dev/null || true
+    systemctl disable "$LEGACY_SERVICE_NAME" 2>/dev/null || true
+    rm -f "$LEGACY_SERVICE_FILE"
     systemctl daemon-reload
 
     if [ -n "$PREV_APP_DIR" ] && [ -d "$PREV_APP_DIR" ] && [ "$PREV_APP_DIR" != "$SCRIPT_DIR_REAL" ]; then
@@ -85,7 +92,7 @@ fi
 echo -e "${GREEN}[4/9]${NC} Verificando instalacao anterior..."
 detect_previous_installation
 if [ "$NEED_UNINSTALL" -eq 1 ]; then
-    uninstall_previous_installation
+    echo -e "${YELLOW}[INFO]${NC} Instalacao anterior detectada. A migracao sera finalizada apos subir o novo servico."
 else
     echo -e "${GREEN}[INFO]${NC} Nenhuma instalacao anterior conflitante encontrada."
 fi
@@ -153,11 +160,15 @@ chown -R berserk-tracker:berserk-tracker "$DATA_DIR"
 chmod 600 "$CONFIG_FILE"
 
 systemctl daemon-reload
-systemctl enable berserk-tracker
-if systemctl is-active --quiet berserk-tracker; then
-    systemctl restart berserk-tracker
+systemctl enable "$SERVICE_NAME"
+if systemctl is-active --quiet "$SERVICE_NAME"; then
+    systemctl restart "$SERVICE_NAME"
 else
-    systemctl start berserk-tracker
+    systemctl start "$SERVICE_NAME"
+fi
+
+if [ "$NEED_UNINSTALL" -eq 1 ]; then
+    uninstall_previous_installation
 fi
 
 echo ""
@@ -178,8 +189,8 @@ echo ""
 echo "3. O servico ja foi iniciado/reiniciado automaticamente."
 echo ""
 echo "4. Verifique o status:"
-echo "   systemctl status berserk-tracker"
-echo "   journalctl -u berserk-tracker -f"
+echo "   systemctl status $SERVICE_NAME"
+echo "   journalctl -u $SERVICE_NAME -f"
 echo ""
 echo "5. Teste o health check:"
 echo "   curl http://localhost:8080/health"

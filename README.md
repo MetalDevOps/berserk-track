@@ -57,14 +57,14 @@ PUSHOVER_API_TOKEN=seu_api_token
 ### 5. Iniciar Servico
 
 ```bash
-systemctl enable berserk-tracker
-systemctl start berserk-tracker
+systemctl enable berserk-track
+systemctl start berserk-track
 
 # Verificar status
-systemctl status berserk-tracker
+systemctl status berserk-track
 
 # Ver logs
-journalctl -u berserk-tracker -f
+journalctl -u berserk-track -f
 ```
 
 ### 6. Testar Health Check
@@ -126,13 +126,13 @@ O `install.sh` funciona como **install/update**: faz `git pull` (quando possivel
 
 ```bash
 # Ver logs em tempo real
-journalctl -u berserk-tracker -f
+journalctl -u berserk-track -f
 
 # Reiniciar servico
-systemctl restart berserk-tracker
+systemctl restart berserk-track
 
 # Parar servico
-systemctl stop berserk-tracker
+systemctl stop berserk-track
 
 # Verificar health
 curl http://localhost:8080/health
@@ -177,7 +177,7 @@ berserk-track/
 ├── install.sh              # Script de instalacao LXC
 ├── uninstall.sh            # Script de desinstalacao
 ├── deploy/
-│   ├── berserk-tracker.service  # Unit systemd
+│   ├── berserk-track.service  # Unit systemd
 │   └── config.env.example       # Exemplo de configuracao
 ├── Dockerfile              # Para deploy Docker
 └── docker-compose.yml      # Para deploy Docker
@@ -187,7 +187,7 @@ berserk-track/
 
 ### Servico nao inicia
 ```bash
-journalctl -u berserk-tracker -n 50
+journalctl -u berserk-track -n 50
 ```
 
 ### Nao recebo notificacoes
